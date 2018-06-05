@@ -2,21 +2,20 @@ package com.gillsoft.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.gillsoft.model.Log;
 
-public class SendLogTask implements Callable<Integer> {
+public class SendLogTask implements Runnable {
 	
 	private RestTemplate template;
 	private String url;
 	private List<Log> logs;
+	private ResponseEntity<String> response;
 	
-	private SendLogTask(RestTemplate template, String url, Log log) {
+	public SendLogTask(RestTemplate template, String url, Log log) {
 		this.template = template;
 		this.url = url;
 		if (log != null) {
@@ -25,20 +24,22 @@ public class SendLogTask implements Callable<Integer> {
 		}
 	}
 	
-	private SendLogTask(RestTemplate template, String url, List<Log> logs) {
+	public SendLogTask(RestTemplate template, String url, List<Log> logs) {
 		this.template = template;
 		this.url = url;
 		this.logs = logs;
 	}
 
 	@Override
-	public Integer call() throws Exception {
-		if (logs == null
-				|| logs.isEmpty()) {
-			return HttpStatus.BAD_REQUEST.value();
+	public void run() {
+		if (logs != null
+				&& !logs.isEmpty()) {
+			response = template.postForEntity(url, logs, String.class, null, null);
 		}
-		ResponseEntity<String> resp = template.postForEntity(url, logs, String.class, null, null);
-		return resp.getStatusCodeValue();
+	}
+
+	public ResponseEntity<String> getResponse() {
+		return response;
 	}
 
 }

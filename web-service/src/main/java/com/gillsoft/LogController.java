@@ -20,9 +20,6 @@ public class LogController {
 	
 	@PostMapping
 	public void save(@RequestBody List<Log> logs) {
-		for (Log log : logs) {
-			System.out.println(log);
-		}
 		manager.save(logs);
 	}
 
